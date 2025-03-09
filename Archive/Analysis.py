@@ -84,8 +84,8 @@ def main():
     for stock in stocks:
         stockData[stock] = getStockInfo(stock)
 
-
     stockDf = pd.DataFrame(stockData).T
+    stockDf = stockDf.sort_values(by="Market Cap", ascending=False)
 
     # Progress bar for data loading
     progress_bar = st.progress(0)
