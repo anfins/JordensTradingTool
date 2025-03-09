@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
+import os
+
 
 def getStockInfo(ticker):
     stock = yf.Ticker(ticker)   
@@ -53,19 +55,28 @@ def getStockInfo(ticker):
 def plotData(stockDf, passedVal):
     stockDf = stockDf.dropna(subset=[passedVal])
     
-    # Plot Market Cap
-    plt.figure(figsize=(12, 6))
-    stockDf[passedVal].plot(kind="bar", color="skyblue", edgecolor="black")
-    plt.title(passedVal +  " of Selected Stocks")
+    fig, ax = plt.subplots(figsize=(12, 6))
+    
+    # Filter out NaN values
+    filtered_df = stockDf.dropna(subset=[passedVal])
+    
+    if filtered_df.empty:
+        st.warning(f"No data available for {passedVal}")
+        return
+    
+    filtered_df[passedVal].plot(kind="bar", color="skyblue", edgecolor="black", ax=ax)
+    plt.title(f"{passedVal} of Selected Stocks")
     plt.xlabel("Stock")
-    plt.ylabel(passedVal + " (in USD)")
+    plt.ylabel(f"{passedVal} (in USD)")
     plt.xticks(rotation=45)
     plt.grid(axis="y", linestyle="--", alpha=0.7)
-    plt.tight_layout()  # Added to ensure labels fit properly
-    # Save the plot instead of showing it
-    plt.savefig(f"Plots/{passedVal.replace('/', '_')}_plot.png")
-    plt.close()  # Close the figure to free memory
-    
+    plt.tight_layout()
+
+    # Return the figure to be displayed in Streamlit
+    return fig
+
+
+
 def main():
     # Create a Stock object
     stocks = ["AAPL", "MSFT", "GOOGL", "AMZN", "BABA", "BIDU", "NFLX", "WBD", "SPOT", "TSLA", "F", "RDDT", "SNAP", "UBER"]
@@ -75,14 +86,26 @@ def main():
 
 
     stockDf = pd.DataFrame(stockData).T
-    plotData(stockDf, "Market Cap")
-    plotData(stockDf, "Free Cash Flow")
-    plotData(stockDf, "Net Income")
-    plotData(stockDf, "Total Debt")
-    plotData(stockDf, "Free Cash Flow to Debt")
 
-    print(stockDf)
+    # Progress bar for data loading
+    progress_bar = st.progress(0)
 
+
+    # Display the raw data
+    st.subheader("Stock Financial Data")
+    st.dataframe(stockDf)
+
+    # Create metrics to display
+    metrics = ["Market Cap", "Free Cash Flow", "Net Income", "Total Debt", "Free Cash Flow to Debt"]
+    
+    # Add option to select additional metrics
+    selected_metric = st.selectbox("Select a metric to visualize:", metrics)
+    
+    # Plot the selected metric
+    st.subheader(f"{selected_metric} Comparison")
+    fig = plotData(stockDf, selected_metric)
+    if fig:
+        st.pyplot(fig)
 
 
 
