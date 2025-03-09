@@ -8,10 +8,15 @@ def getStockInfo(ticker):
     stock = yf.Ticker(ticker)   
     
     stockInfo = stock.info
+
+
     try:
+            
+       
         stockData = {
             "Market Cap": stockInfo["marketCap"],
             "Free Cash Flow": stockInfo["freeCashflow"],    
+            "Free Cash Flow to Debt": stockInfo["freeCashflow"] / stockInfo["totalDebt"] if stockInfo["totalDebt"] != 0 else 0,
             "Net Income": stockInfo["netIncomeToCommon"],
             "Total Debt": stockInfo["totalDebt"],
             "Current Price": stockInfo["currentPrice"],
@@ -45,7 +50,7 @@ def plotData(stockDf, passedVal):
     
 def main():
     # Create a Stock object
-    stocks = ["AAPL", "MSFT", "GOOGL", "AMZN", "BABA", "BIDU", "NFLX", "SPOT", "TSLA", "F", "RDDT", "SNAP"]
+    stocks = ["AAPL", "MSFT", "GOOGL", "AMZN", "BABA", "BIDU", "NFLX", "WBD", "SPOT", "TSLA", "F", "RDDT", "SNAP"]
     stockData= {}
     for stock in stocks:
         stockData[stock] = getStockInfo(stock)
@@ -56,6 +61,8 @@ def main():
     plotData(stockDf, "Free Cash Flow")
     plotData(stockDf, "Net Income")
     plotData(stockDf, "Total Debt")
+    plotData(stockDf, "Free Cash Flow to Debt")
+
 
 
 
