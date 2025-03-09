@@ -7,32 +7,33 @@ import streamlit as st
 def getStockInfo(ticker):
     stock = yf.Ticker(ticker)   
     stockInfo = stock.info
-    #print(stockInfo.keys())
 
-    print(f"Ticker: {ticker}")
-    print(f"Current Price: ${stockInfo['currentPrice']:,.2f}")
-    print(f"Previous Close: ${stockInfo['previousClose']:,.2f}")
-    print(f"Shares Outstanding: {stockInfo['sharesOutstanding']:,.0f}")
-    print(f"Shares Short: {stockInfo['sharesShort']:,.0f}")
-    print(f"Short Ratio: {stockInfo['shortRatio']:.2f}")
-    print(f"Currency: {stockInfo['financialCurrency']}")
-    print(f"Earnings Growth: ${stockInfo['earningsGrowth']*100:,.2f}%")
-    print(f"52 Week Range: {stockInfo['fiftyTwoWeekRange']}")
-    print(f"Held by Institutions: {stockInfo['heldPercentInstitutions'] * 100:.2f}%")
-    print(f"Held by Insiders: {stockInfo['heldPercentInsiders'] * 100:.2f}%")
-    print(f"Market Cap: ${stockInfo['marketCap']:,.2f}")
-    print(f"Forward P/E: {stockInfo['forwardPE']}")
-    print(f"Free Cash Flow: ${stockInfo['freeCashflow']:,.2f}")
-    print(stock.get_income_stmt().loc["NetIncome"])
-    print("-----------------------------")
+    try:
+        stockData = {
+            "Market Cap": stockInfo["marketCap"],
+            "Free Cash Flow": stockInfo["freeCashflow"],    
+            "Total Revenue": stockInfo["totalRevenue"],
+            "Current Price": stockInfo["currentPrice"],
+            "52 Week Range": stockInfo["fiftyTwoWeekRange"],
+            "52 Week High Change": stockInfo["fiftyTwoWeekHighChange"],
+            "Held by Institutions": stockInfo["heldPercentInstitutions"],
+            "Held by Insiders": stockInfo["heldPercentInsiders"],
+            "Forward P/E": stockInfo["forwardPE"],
+        }
+        return stockData
+    except Exception as e:
+        print(f"Error: {e}")
 
     
 def main():
     # Create a Stock object
-    stocks = ["AAPL", "MSFT", "GOOGL", "AMZN", "BABA", "BIDU", "NFLX", "TSLA"]
+    stocks = ["AAPL", "MSFT", "GOOGL", "AMZN", "BABA", "BIDU", "NFLX", "SPOT", "TSLA", "F", "RDDT", "SNAP"]
+    stockData= {}
     for stock in stocks:
-        getStockInfo(stock)
+        stockData[stock] = getStockInfo(stock)
 
+    stockDf = pd.DataFrame(stockData)
+    print(stockDf)
 
 if __name__ == '__main__':
     main()
