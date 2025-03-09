@@ -2,7 +2,7 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 import streamlit as st
-
+import matplotlib.pyplot as plt
 
 def getStockInfo(ticker):
     stock = yf.Ticker(ticker)   
@@ -24,6 +24,20 @@ def getStockInfo(ticker):
     except Exception as e:
         print(f"Error: {e}")
 
+
+def plotStockData(stockData, passedVal):
+    stockDf = pd.DataFrame(stockData)
+    stockDf[passedVal] = stockDf[passedVal].astype(float)
+    
+    plt.figure(figsize=(10, 6))
+    stockDf['Market Cap'].plot(kind='bar')
+    plt.title('Market Cap of Selected Stocks')
+    plt.xlabel('Stock Ticker')
+    plt.ylabel('Market Cap (in billions)')
+    plt.xticks(rotation=45)
+    plt.show()
+
+
     
 def main():
     # Create a Stock object
@@ -32,8 +46,7 @@ def main():
     for stock in stocks:
         stockData[stock] = getStockInfo(stock)
 
-    stockDf = pd.DataFrame(stockData)
-    print(stockDf)
+    plotStockData(stockData, "Market Cap")
 
 if __name__ == '__main__':
     main()
