@@ -11,21 +11,39 @@ def getStockInfo(ticker):
 
 
     try:
-            
+        is_chinese = False
+        if stockInfo["country"] == "China":
+            is_chinese = True
+
+        cny_to_usd = 0.1389
+        
+
+        # Convert values if Chinese stock
+        multiplier = cny_to_usd if is_chinese else 1
+        
+
+        # Apply conversion to financial metrics
+        market_cap = int(stockInfo.get("marketCap", 0) * multiplier)
+        free_cash_flow = int(stockInfo.get("freeCashflow", 0) * multiplier)
+        net_income = int(stockInfo.get("netIncomeToCommon", 0) * multiplier)
+        total_debt = int(stockInfo.get("totalDebt", 0) * multiplier)
+        
        
         stockData = {
-            "Market Cap": stockInfo["marketCap"],
-            "Free Cash Flow": stockInfo["freeCashflow"],    
-            "Free Cash Flow to Debt": stockInfo["freeCashflow"] / stockInfo["totalDebt"] if stockInfo["totalDebt"] != 0 else 0,
-            "Net Income": stockInfo["netIncomeToCommon"],
-            "Total Debt": stockInfo["totalDebt"],
-            "Current Price": stockInfo["currentPrice"],
-            "52 Week Range": stockInfo["fiftyTwoWeekRange"],
-            "52 Week High Change": stockInfo["fiftyTwoWeekHighChange"],
-            "Return on Equity": stockInfo["returnOnEquity"],
-            "Held by Institutions": stockInfo["heldPercentInstitutions"] * 100,
-            "Held by Insiders": stockInfo["heldPercentInsiders"] * 100,
-            "Forward P/E": stockInfo["forwardPE"],
+            "Market Cap": market_cap,
+            "Free Cash Flow": free_cash_flow,    
+            "Free Cash Flow to Debt": free_cash_flow / total_debt if total_debt != 0 else 0,
+            "Net Income": net_income,
+            "Total Debt": total_debt,
+            "Current Price": stockInfo.get("currentPrice", 0),  # Stock price is typically shown in local currency
+            "52 Week Range": stockInfo.get("fiftyTwoWeekRange", "N/A"),
+            "52 Week High Change": stockInfo.get("fiftyTwoWeekHighChange", 0),
+            "Return on Equity": stockInfo.get("returnOnEquity", 0),
+            "Held by Institutions": stockInfo.get("heldPercentInstitutions", 0) * 100,
+            "Held by Insiders": stockInfo.get("heldPercentInsiders", 0) * 100,
+            "Forward P/E": stockInfo.get("forwardPE", 0),
+            "Currency": "USD (Converted)" if is_chinese else "USD"
+
         }
         return stockData
     except Exception as e:
@@ -50,7 +68,7 @@ def plotData(stockDf, passedVal):
     
 def main():
     # Create a Stock object
-    stocks = ["AAPL", "MSFT", "GOOGL", "AMZN", "BABA", "BIDU", "NFLX", "WBD", "SPOT", "TSLA", "F", "RDDT", "SNAP"]
+    stocks = ["AAPL", "MSFT", "GOOGL", "AMZN", "BABA", "BIDU", "NFLX", "WBD", "SPOT", "TSLA", "F", "RDDT", "SNAP", "UBER"]
     stockData= {}
     for stock in stocks:
         stockData[stock] = getStockInfo(stock)
@@ -63,6 +81,7 @@ def main():
     plotData(stockDf, "Total Debt")
     plotData(stockDf, "Free Cash Flow to Debt")
 
+    print(stockDf)
 
 
 
