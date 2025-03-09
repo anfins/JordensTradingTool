@@ -1,6 +1,7 @@
 import yfinance as yf
 import pandas as pd
 import numpy as np
+import streamlit as st
 
 
 def getStockInfo(ticker):
@@ -22,20 +23,15 @@ def getStockInfo(ticker):
     print(f"Market Cap: ${stockInfo['marketCap']:,.2f}")
     print(f"Forward P/E: {stockInfo['forwardPE']}")
     print(f"Free Cash Flow: ${stockInfo['freeCashflow']:,.2f}")
+    print(stock.get_income_stmt().loc["NetIncome"])
     print("-----------------------------")
 
     
 def main():
     # Create a Stock object
-    getStockInfo("AAPL")
-    getStockInfo("MSFT")
-    getStockInfo("GOOGL")
-    getStockInfo("AMZN")
-    getStockInfo("BABA")
-    getStockInfo("BIDU")
-    getStockInfo("NFLX")
-    getStockInfo("TSLA")
-    
+    stocks = ["AAPL", "MSFT", "GOOGL", "AMZN", "BABA", "BIDU", "NFLX", "TSLA"]
+    for stock in stocks:
+        getStockInfo(stock)
 
 
 if __name__ == '__main__':
