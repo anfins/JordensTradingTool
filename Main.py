@@ -4,7 +4,13 @@ import os
 import yfinance as yf
 import pandas as pd
 import numpy as np
+import json
 
+import nltk
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+
+nltk.download('vader_lexicon')
+sid = SentimentIntensityAnalyzer()
 
 def getStockInfo(ticker):
     stock = yf.Ticker(ticker)   
@@ -49,6 +55,38 @@ def getStockInfo(ticker):
         return {}
 
 
+def getStockNews(ticker):
+    stock = yf.Ticker(ticker)
+    newsData = stock.news
+
+    newsArray = []
+    
+    for article in newsData:
+        if 'content' in article and 'summary' in article['content']:
+            summary = article['content']['summary']
+            title = article['content']['title']
+            sentiment = sid.polarity_scores(summary)["compound"]
+            newsArray.append([title, summary, sentiment])
+            print([title, summary, sentiment])
+    
+    return newsArray if newsArray else []
+
+
+def get_sentiment_color(sentiment_score):
+    """Return a color based on sentiment score"""
+    if sentiment_score >= 0.5:
+        return "#00CC00"  # Strong positive - green
+    elif sentiment_score > 0:
+        return "#88CC88"  # Weak positive - light green
+    elif sentiment_score == 0:
+        return "#CCCCCC"  # Neutral - gray
+    elif sentiment_score > -0.5:
+        return "#CC8888"  # Weak negative - light red
+    else:
+        return "#CC0000"  # Strong negative - red
+
+
+
 def main():
     
     # Enter stock ticker
@@ -57,6 +95,7 @@ def main():
     if ticker or st.button("Get Stock Info"):
         with st.spinner("Fetching Data"):
             stock_data = getStockInfo(ticker)
+            stock_news = getStockNews(ticker)
             
             if not stock_data:
                 st.warning(f"Could not retrieve data for {ticker}")
@@ -96,6 +135,48 @@ def main():
             st.subheader("Company Description")
             st.write(stock_data.get("Description", "No description available."))
 
+            # Display news if available
+            if stock_news:
+                st.subheader("Recent News")
+                st.markdown("""
+                <style>
+                .sentiment-circle {
+                    height: 15px;
+                    width: 15px;
+                    border-radius: 50%;
+                    display: inline-block;
+                    margin-right: 10px;
+                }
+                </style>
+                """, unsafe_allow_html=True)
+                
+                for row in stock_news:
+                    title = row[0]
+                    summary = row[1]
+                    sentiment = row[2]
+                    
+                    # Get color based on sentiment
+                    color = get_sentiment_color(sentiment)
+                    
+                    # Display title with sentiment circle
+                    st.markdown(f"""
+                    <h3>
+                      <span class="sentiment-circle" style="background-color: {color};"></span>
+                      {title}
+                    </h3>
+                    """, unsafe_allow_html=True)
+                    
+                    st.write(summary)
+                    
+                    # Create a label for the sentiment score
+                    sentiment_label = "Very Positive" if sentiment >= 0.5 else "Positive" if sentiment > 0 else "Neutral" if sentiment == 0 else "Negative" if sentiment > -0.5 else "Very Negative"
+                    st.write(f"Sentiment: {sentiment:.2f} ({sentiment_label})")
+                    st.write("---")
+            else:
+                st.info("No news articles available for this stock.")
+           
+
+           
 
 if __name__ == "__main__":
     main()
