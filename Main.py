@@ -181,7 +181,7 @@ def main():
                     sentiment_label = "Very Positive" if sentiment >= 0.5 else "Positive" if sentiment > 0 else "Neutral" if sentiment == 0 else "Negative" if sentiment > -0.5 else "Very Negative"
                     st.write(f"Sentiment: {sentiment:.2f} ({sentiment_label})")
                     st.write("---")
-                prompt = "Generate a summary of the following news :" + newsString
+                prompt = "Generate a summary of the following news, don't offer any feedback or ask any further questions:" + newsString
                 response = client.generate(model = model, prompt = prompt)
                 st.write(response.response)
 
