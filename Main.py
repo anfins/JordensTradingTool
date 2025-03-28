@@ -144,7 +144,13 @@ def main():
 
             # Display news if available
             if stock_news:
+                totalSentiment = sum(row[2] for row in stock_news)
+                averageSentiment = totalSentiment / len(stock_news) if stock_news else 0
+                
+
+
                 st.subheader("Recent News")
+                st.write(f"Average Sentiment: {averageSentiment:.2f}")
                 st.markdown("""
                 <style>
                 .sentiment-circle {
@@ -162,6 +168,8 @@ def main():
                     title = row[0]
                     summary = row[1]
                     sentiment = row[2]
+                    totalSentiment += sentiment
+                
                     newsString += summary
                     
                     # Get color based on sentiment
