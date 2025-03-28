@@ -4,3 +4,4 @@ datetime
 yfinance
 matplotlib
 pymupdf
+ollama

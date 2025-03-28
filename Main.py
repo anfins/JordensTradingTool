@@ -5,6 +5,7 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 import json
+import ollama
 
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
@@ -89,8 +90,14 @@ def get_sentiment_color(sentiment_score):
 
 def main():
     
+    client = ollama.Client()    
+    model = "gemma3:1b"
     # Enter stock ticker
     ticker = st.text_input("Enter a stock ticker (e.g., AAPL, MSFT, GOOGL):", "AAPL")
+    stock_data = getStockInfo(ticker)
+    stock_news = getStockNews(ticker)
+    print(stock_data)
+
 
     if ticker or st.button("Get Stock Info"):
         with st.spinner("Fetching Data"):
@@ -150,10 +157,12 @@ def main():
                 </style>
                 """, unsafe_allow_html=True)
                 
+                newsString = ""
                 for row in stock_news:
                     title = row[0]
                     summary = row[1]
                     sentiment = row[2]
+                    newsString += summary
                     
                     # Get color based on sentiment
                     color = get_sentiment_color(sentiment)
@@ -172,6 +181,11 @@ def main():
                     sentiment_label = "Very Positive" if sentiment >= 0.5 else "Positive" if sentiment > 0 else "Neutral" if sentiment == 0 else "Negative" if sentiment > -0.5 else "Very Negative"
                     st.write(f"Sentiment: {sentiment:.2f} ({sentiment_label})")
                     st.write("---")
+                prompt = "Generate a summary of the following news :" + newsString
+                response = client.generate(model = model, prompt = prompt)
+                st.write(response.response)
+
+                st.write()
             else:
                 st.info("No news articles available for this stock.")
            
